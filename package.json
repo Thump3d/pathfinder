@@ -6,7 +6,6 @@
   },
   "description": "Pathfinder is a system mapping tool for EVE ONLINE",
   "main": "index.php",
-  "dependencies": {},
   "devDependencies": {
     "ansi-colors": "^4.1.1",
     "babel": "^6.23.0",
@@ -35,7 +34,6 @@
     "jshint-stylish": "^2.x.x",
     "lodash.padend": "4.6.x",
     "node-notifier": ">=8.0.1",
-    "node-sass": "^8.0.0",
     "pretty-bytes": "^5.3.0",
     "promised-del": "1.0.x",
     "sass": "^1.62.0",
@@ -68,5 +66,8 @@
     "email": "pathfinder@exodus4d.de"
   },
   "homepage": "https://github.com/exodus4d/pathfinder#readme",
-  "private": true
+  "private": true,
+  "dependencies": {
+    "node-sass": "^9.0.0"
+  }
 }

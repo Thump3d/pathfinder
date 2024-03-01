@@ -29,6 +29,13 @@ class EveScoutClient extends AbstractClient {
         $client = null;
         if(class_exists(Client::class)){
             $client = new Client(Config::getPathfinderData('api.eve_scout'));
+            $client->setLogStats(true);                        // add cURL stats (e.g. transferTime) to loggable requests
+            $client->setLogCache(true);                       // add cache info (e.g. from cached) to loggable requests
+            $client->setLogAllStatus(true);                 // log all requests regardless of response HTTP status code
+            $client->setLogRequestHeaders(true);       // add request HTTP headers to loggable requests
+            $client->setLogResponseHeaders(true);      // add response HTTP headers to loggable requests
+            $client->setLogFile('evescout_requests');
+
         }else{
             $this->getLogger()->write($this->getMissingClassError(Client::class));
         }
