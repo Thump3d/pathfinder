@@ -13,11 +13,11 @@
   ],
   "config": {
     "optimize-autoloader": true,
-    "lock": false
+    "lock": true
   },
   "autoload": {
     "psr-4": {
-      "Thump3d\\Pathfinder\\": "app/"
+      "Exodus4D\\Pathfinder\\": "app/"
 
     }
   },
@@ -52,6 +52,7 @@
     "react/socket": "1.3.*",
     "react/promise-stream": "1.2.*",
     "clue/ndjson-react": "1.1.*",
+    "firebase/php-jwt": "6.*",
     "thump3d/pathfinder_esi": "dev-master as 0.0.x-dev"
   },
   "suggest": {
