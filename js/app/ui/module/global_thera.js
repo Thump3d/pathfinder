@@ -36,10 +36,10 @@ define([
             let title = '';
             switch(status){
                 case 'warning':
-                    title = `not in ${this._config.eveScoutUrl.hostname.replace('www.', '')} connections`;
+                    title = `not in ${this._config.eveScoutUrl.hostname.replace('api.', '')} connections`;
                     break;
                 case 'success':
-                    title = `in ${this._config.eveScoutUrl.hostname.replace('www.', '')} connections`;
+                    title = `in ${this._config.eveScoutUrl.hostname.replace('api.', '')} connections`;
                     break;
                 case 'hint':
                     title += `sync connections/signatures`;
@@ -173,19 +173,13 @@ define([
                         }
                     },{
                         targets: 1,
-                        name: 'trueSec',
-                        title: 'sec',
-                        width: 15,
-                        className:'text-center',
-                        data: 'target.trueSec',
+                        name: 'sourceName',
+                        title: 'origin',
+                        className: module._config.tableCellEllipsisClass,
+                        data: 'source',
                         defaultContent: module.getIconForUndefinedCellValue(),
                         render: {
-                            display: (cellData, type, rowData, meta) => {
-                                if(cellData !== undefined){
-                                    let systemTrueSecClass = BaseModule.Util.getTrueSecClassForSystem(cellData);
-                                    return '<span class="' + systemTrueSecClass + '">' + cellData.toFixed(1) + '</span>';
-                                }
-                            }
+                            _: 'name'
                         }
                     },{
                         targets: 2,
@@ -415,7 +409,7 @@ define([
                                 }else if(!rowData.syncStatus){
                                     // add row ------------------------------------------------------------------------
 
-                                    let systemDataThera = MapUtil.getSystemData(module._mapId, TheraModule.systemIdThera, 'systemId');
+                                    let systemDataThera = MapUtil.getSystemData(module._mapId, BaseModule.Util.getObjVal(rowData, 'source.id'), 'systemId');
                                     let systemDataSource = MapUtil.getSystemData(module._mapId, BaseModule.Util.getObjVal(rowData, 'target.id'), 'systemId');
 
                                     if(systemDataThera && systemDataSource){
@@ -674,7 +668,9 @@ define([
                         });
                     }
                 }))
-                .then(connectionsData => this[callback](connectionsData, system));
+                .then(connectionsData => {
+                    this[callback](connectionsData, system);
+                });
         }
 
         /**
@@ -845,11 +841,11 @@ define([
                     let systemNameTarget = BaseModule.Util.getObjVal(rowData, 'target.name');
                     let connectionHash = BaseModule.getConnectionDataCacheKey(systemNameSource, systemNameTarget);
 
-                    let whLabel = BaseModule.Util.getObjVal(rowData, 'sourceSignature.type.name') || null;
+                    let whLabel = BaseModule.Util.getObjVal(rowData, 'sourceSignature.type') || null;
                     if(!whLabel){
-                        whLabel = BaseModule.Util.getObjVal(rowData, 'targetSignature.type.name') || null;
+                        whLabel = BaseModule.Util.getObjVal(rowData, 'targetSignature.type') || null;
                     }
-
+                    
                     let massType = BaseModule.Util.getObjVal(Object.assign({}, Init.wormholes[whLabel]), 'size.type');
                     let connectionType = [...rowData.type, massType];
 
