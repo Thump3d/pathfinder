@@ -15,7 +15,7 @@ define([
      */
     let TheraModule = class TheraModule extends BaseModule {
         constructor(config = {}) {
-            config.eveScoutUrl = new URL(Init.url.eveScout);
+            config.eveScoutUrl = new URL(Init.url.eveScout.replace('api.', 'www.'));
             super(Object.assign({}, new.target.defaultConfig, config));
         }
 
@@ -36,10 +36,10 @@ define([
             let title = '';
             switch(status){
                 case 'warning':
-                    title = `not in ${this._config.eveScoutUrl.hostname.replace('api.', '')} connections`;
+                    title = `not in ${this._config.eveScoutUrl.hostname.replace('www.', '')} connections`;
                     break;
                 case 'success':
-                    title = `in ${this._config.eveScoutUrl.hostname.replace('api.', '')} connections`;
+                    title = `in ${this._config.eveScoutUrl.hostname.replace('www.', '')} connections`;
                     break;
                 case 'hint':
                     title += `sync connections/signatures`;
@@ -236,7 +236,9 @@ define([
                         data: 'sourceSignature',
                         defaultContent: module.getIconForUndefinedCellValue(),
                         render: {
-                            _: 'name'
+                            _: (data, type, row) => {
+                                return data.name ? data.name.substring(0, 3) : ''; 
+                            }
                         }
                     },{
                         targets: 6,
@@ -256,7 +258,9 @@ define([
                         data: 'targetSignature',
                         defaultContent: module.getIconForUndefinedCellValue(),
                         render: {
-                            _: 'name'
+                            _: (data, type, row) => {
+                                return data.name ? data.name.substring(0, 3) : '';
+                            }
                         }
                     },{
                         targets: 8,
@@ -469,7 +473,7 @@ define([
                             });
                         }
                     },{
-                        targets: 10,
+                        targets: 11,
                         name: 'rowGroupData',
                         className: 'never',     // never show this column. see: https://datatables.net/extensions/responsive/classes
                         data: 'rowGroupData',
@@ -861,7 +865,7 @@ define([
                     if(!whLabel){
                         whLabel = BaseModule.Util.getObjVal(rowData, 'targetSignature.type') || null;
                     }
-                    
+
                     let massType = BaseModule.Util.getObjVal(Object.assign({}, Init.wormholes[whLabel]), 'size.type');
                     let connectionType = [...rowData.type, massType];
 
