@@ -476,6 +476,9 @@ define([], () => {
             state_active: {
                 cssClass: 'pf-map-connection-active'
             },
+            state_rally_path: {
+                cssClass: 'pf-map-connection-rally'
+            },
             state_process: {
                 cssClass: 'pf-map-connection-process',
                 overlays: [
