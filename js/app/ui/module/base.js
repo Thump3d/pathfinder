@@ -5,8 +5,9 @@ define([
     'app/map/util',
     'app/lib/cache',
     'app/promises/promise.deferred',
-    'app/promises/promise.queue'
-], ($, Init, Util, MapUtil, Cache, DeferredPromise, PromiseQueue) => {
+    'app/promises/promise.queue',
+    'bootbox'
+], ($, Init, Util, MapUtil, Cache, DeferredPromise, PromiseQueue, bootbox) => {
     'use strict';
 
     /**
@@ -74,6 +75,9 @@ define([
                 this.newHandlerElement(),
                 this.newHeadlineElement(text || this._config.headline)
             );
+            if(this._config.showPopoutIcon){
+                headEl.append(this.newPopoutIconElement());
+            }
             return headEl;
         }
 
@@ -130,6 +134,17 @@ define([
         }
 
         /**
+         * icon element for popout button
+         * @returns {HTMLElement}
+         */
+        newPopoutIconElement(){
+            let icon = this.newIconElement(['fa-external-link-alt', 'fa-fw', this._config.moduleHeadlineIconClass, this._config.moduleHeadlineIconPopoutClass]);
+            icon.setAttribute('title', 'open in overlay');
+            icon.addEventListener('click', () => this.openInOverlay());
+            return icon;
+        }
+
+        /**
          * label element
          * @param text
          * @param cls
@@ -155,6 +170,19 @@ define([
             controlEl.insertAdjacentHTML('beforeend', `&nbsp;&nbsp;${text}`);
             controlEl.prepend(this.newIconElement(iconCls));
             return controlEl;
+        }
+
+        /**
+         * open this module in a bootbox overlay
+         */
+        openInOverlay(){
+            let content = this.moduleElement.cloneNode(true);
+            content.style.opacity = '';
+            bootbox.dialog({
+                title: this._config.headline,
+                message: content,
+                size: 'large'
+            });
         }
 
         /**
@@ -506,7 +534,9 @@ define([
         bodyClassName: 'pf-module-body',                    // class for module body [optional: can be used]
         controlAreaClass: 'pf-module-control-area',         // class for "control" areas
 
-        moduleHeadlineIconClass: 'pf-module-icon-button'    // class for toolbar icons in the head
+        moduleHeadlineIconClass: 'pf-module-icon-button',   // class for toolbar icons in the head
+        moduleHeadlineIconPopoutClass: 'pf-module-icon-button-popout', // class for popout icon
+        showPopoutIcon: false
     };
 
     return BaseModule;
