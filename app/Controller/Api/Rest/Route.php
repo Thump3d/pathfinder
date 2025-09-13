@@ -438,65 +438,58 @@ class Route extends AbstractRestController {
      * @return array
      */
     private function graph_find_path(&$G, $A, $B, $M = 50000){
+        // store the original max depth for returning in case the search fails
         $maxDepth = $M;
 
-        // $P will hold the result path at the end.
-        // Remains empty if no path was found.
-        $P = [];
-
-        // For each Node ID create a "visit information",
-        // initially set as 0 (meaning not yet visited)
-        // as soon as we visit a node we will tag it with the "source"
-        // so we can track the path when we reach the search target
-
-        $V = [];
-
-        // We are going to keep a list of nodes that are "within reach",
-        // initially this list will only contain the start node,
-        // then gradually expand (almost like a flood fill)
-        $R = [trim($A)];
-
+        // sanitize start and target node ids
         $A = trim($A);
         $B = trim($B);
 
-        while(count($R) > 0 && $M > 0){
-            $M--;
+        // queue based breadth-first search (BFS). Each entry contains the node
+        // id and the current depth for that node.
+        $queue   = [[ $A, 0 ]];
+        // $visited is used to reconstruct the path once $B is found. The start
+        // node has no predecessor -> `null`.
+        $visited = [ $A => null ];
 
-            $X = trim(array_shift($R));
+        while(!empty($queue)){
+            // fetch next node to expand. array_shift() ensures BFS order
+            list($node, $depth) = array_shift($queue);
 
-            if(array_key_exists($X, $G)){
-                foreach($G[$X] as $Y){
-                    $Y = trim($Y);
-                    // See if we got a solution
-                    if($Y == $B){
-                        // We did? Construct a result path then
-                        array_push($P, $B);
-                        array_push($P, $X);
-                        while($V[$X] != $A){
-                            array_push($P, trim($V[$X]));
-                            $X = $V[$X];
-                        }
-                        array_push($P, $A);
-                        //return array_reverse($P);
-                        return [
-                            'path'=> array_reverse($P),
-                            'depth' => ($maxDepth - $M)
-                        ];
-                    }
-                    // First time we visit this node?
-                    if(!array_key_exists($Y, $V)){
-                        // Store the path so we can track it back,
-                        $V[$Y] = $X;
-                        // and add it to the "within reach" list
-                        array_push($R, $Y);
+            if($node === $B){
+                // build the resulting path by following the predecessors
+                $path = [$B];
+                while($visited[$node] !== null){
+                    $node = $visited[$node];
+                    array_unshift($path, $node);
+                }
+
+                return [
+                    'path'  => $path,
+                    'depth' => $depth
+                ];
+            }
+
+            // stop expanding this branch if maximum search depth is reached
+            if($depth >= $maxDepth){
+                continue;
+            }
+
+            if(array_key_exists($node, $G)){
+                foreach($G[$node] as $next){
+                    $next = trim($next);
+                    // add unknown neighbours to the queue and remember the path
+                    if(!array_key_exists($next, $visited)){
+                        $visited[$next] = $node;
+                        $queue[] = [$next, $depth + 1];
                     }
                 }
             }
         }
 
         return [
-            'path'=> $P,
-            'depth' => ($maxDepth - $M)
+            'path'  => [],
+            'depth' => $maxDepth
         ];
     }
 
