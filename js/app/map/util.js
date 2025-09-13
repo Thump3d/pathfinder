@@ -25,9 +25,11 @@ define([
         systemIdPrefix: 'pf-system-',                                   // id prefix for a system
         systemClass: 'pf-system',                                       // class for all systems
         systemActiveClass: 'pf-system-active',                          // class for an active system on a map
+        systemRallyPathClass: 'pf-system-rally-path',                   // class for systems on rally path
         systemSelectedClass: 'pf-system-selected',                      // class for selected systems on on map
         systemLockedClass: 'pf-system-locked',                          // class for locked systems on a map
         systemHiddenClass: 'pf-system-hidden',                          // class for hidden (filtered) systems
+        connectionRallyPathType: 'state_rally_path',                    // connection type for rally path highlights
 
         // dataTable
         tableCellEllipsisClass: 'pf-table-cell-ellipsis',
@@ -1079,6 +1081,8 @@ define([
     let showSystemInfo = (map, system) => {
         setSystemActive(map, system);
 
+        highlightRallyPaths(map, system);
+
         // get parent Tab Content and fire update event
         let mapContainer = $(map.getContainer());
         let mapId = parseInt(mapContainer.data('id')) || 0;
@@ -1697,6 +1701,84 @@ define([
 
             system.data('rallyUpdated', rallyUpdated);
             system.data('rallyPoke', rallyPoke);
+
+            // highlight rally paths if a system is currently active
+            let mapContainer = system.parents('.' + Util.config.mapClass);
+            let activeSystem = mapContainer.find('.' + config.systemActiveClass);
+            if(activeSystem.length){
+                let map = getMapInstance(mapContainer.data('id'));
+                highlightRallyPaths(map, activeSystem);
+            }
+        });
+    };
+
+    /**
+     * highlight path from active system to rally systems
+     * @param map
+     * @param activeSystem
+     */
+    let highlightRallyPaths = (map, activeSystem) => {
+        let mapContainer = $(map.getContainer());
+
+        // clear previous highlights
+        mapContainer.find('.' + config.systemRallyPathClass).removeClass(config.systemRallyPathClass);
+        for(let connection of getConnectionsByType(map, config.connectionRallyPathType)){
+            removeConnectionType(connection, config.connectionRallyPathType);
+        }
+
+        if(!activeSystem || !activeSystem.length){
+            return;
+        }
+
+        let rallySystems = mapContainer.find('.pf-system-info-rally');
+
+        let getPath = (start, target) => {
+            if(start === target){
+                return {systems: [start], connections: []};
+            }
+            let queue = [start];
+            let visited = new Map();
+            visited.set(start, null);
+
+            while(queue.length){
+                let current = queue.shift();
+                let connections = map.getConnections({scope: '*', source: current});
+                connections = connections.concat(map.getConnections({scope: '*', target: current}));
+                for(let connection of connections){
+                    let neighbour = connection.source === current ? connection.target : connection.source;
+                    if(!visited.has(neighbour)){
+                        visited.set(neighbour, {prev: current, conn: connection});
+                        if(neighbour === target){
+                            queue = [];
+                            break;
+                        }
+                        queue.push(neighbour);
+                    }
+                }
+            }
+
+            if(!visited.has(target)){
+                return {systems: [], connections: []};
+            }
+
+            let systems = [];
+            let connections = [];
+            for(let node = target; node && node !== start;){
+                let info = visited.get(node);
+                if(!info) break;
+                systems.unshift(node);
+                connections.unshift(info.conn);
+                node = info.prev;
+            }
+            systems.unshift(start);
+            return {systems: systems, connections: connections};
+        };
+
+        rallySystems.each(function(){
+            let rallySystem = this;
+            let path = getPath(activeSystem[0], rallySystem);
+            path.systems.forEach(s => $(s).addClass(config.systemRallyPathClass));
+            path.connections.forEach(c => addConnectionType(c, config.connectionRallyPathType));
         });
     };
 
@@ -2297,6 +2379,7 @@ define([
         newSystemPositionByCoordinates: newSystemPositionByCoordinates,
         newSystemPositionsByMapOffset: newSystemPositionsByMapOffset,
         newSystemPositionsByMap: newSystemPositionsByMap,
-        getMapDeeplinkUrl: getMapDeeplinkUrl
+        getMapDeeplinkUrl: getMapDeeplinkUrl,
+        highlightRallyPaths: highlightRallyPaths
     };
 });

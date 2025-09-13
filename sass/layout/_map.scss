@@ -519,6 +519,10 @@ $mapBubbleWidth:        30px;
     @include box-shadow($yellow-lighter 0px 0px 8px 0px);
   }
 
+  .pf-system-rally-path:not(.pf-map-endpoint-source):not(.pf-map-endpoint-target){
+    @include box-shadow($pink-light 0px 0px 8px 0px);
+  }
+
 
   // selected system
   .pf-system-selected:not(.pf-map-endpoint-source):not(.pf-map-endpoint-target){
@@ -799,6 +803,10 @@ $mapBubbleWidth:        30px;
 
   .pf-map-connection-active{
     filter: drop-shadow( 0px 0px 3px $yellow-lighter) !important; // overwrite "hover" shadow
+  }
+
+  .pf-map-connection-rally{
+    filter: drop-shadow( 0px 0px 3px $pink-light) !important;
   }
 
   .pf-map-connection-process{
